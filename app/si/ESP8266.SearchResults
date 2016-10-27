@@ -1,0 +1,5 @@
+---- pwm_tim Matches (5 in 1 files) ----
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	uint8 pwm_tim;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		pwm_tim++;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		pwm_tim = pwm_tim % 31;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		if(pwm_tim <= 10)
