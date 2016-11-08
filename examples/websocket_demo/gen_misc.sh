@@ -8,8 +8,8 @@ export SDK_PATH=~/esp_iot_sdk_freertos
 export BIN_PATH=~/esp8266_bin
 !
 
-export SDK_PATH=
-export BIN_PATH=
+export SDK_PATH=/home/esp8266/Share/ESP8266_RTOS_SDK-1.4.x
+export BIN_PATH=/home/esp8266/Share/ESP8266_RTOS_SDK-1.4.x/examples/websocket_demo/bin
 
 echo "gen_misc.sh version 20150911"
 echo ""

@@ -24,7 +24,7 @@
 
 #include "esp_common.h"
 
-char test_mode = 4;
+char test_mode = 7;
 
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set

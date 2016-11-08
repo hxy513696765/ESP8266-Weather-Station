@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ESP8266_RTOS_SDK #
 
 ----------
@@ -67,3 +68,7 @@ eagle.app.v6.flash.bin, downloads to flash 0x00000
 eagle.app.v6.irom0text.bin, downloads to flash 0x20000
 
 blank.bin, downloads to flash 0x7E000
+=======
+# ESP8266-Weather-Station
+Use ESP8266_RTOS_SDK-1.4.x CJson Resolution Weather Web Json Data and Display on the OLED12864，the code include ESP8266 SmartConfig function can use SmartPhone APP connect to WiFi
+>>>>>>> d023fd73a58386feae7586fbd90474fcff2bc90f

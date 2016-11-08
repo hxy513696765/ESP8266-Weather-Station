@@ -46,6 +46,8 @@
 
 #define DEVICE_TYPE 		"gh_9e2cff3dfa51" //wechat public number
 #define DEVICE_ID 			"122475" //model ID
+#define debug_printf
+#undef  debug_printf
 
 #define DEFAULT_LAN_PORT 	12476
 
@@ -55,22 +57,22 @@ GPIO_ConfigTypeDef smart_set_pin ={
     .GPIO_Pullup     = GPIO_PullUp_EN,           /**< GPIO pullup */
     .GPIO_IntrType   = GPIO_PIN_INTR_DISABLE//GPIO_PIN_INTR_NEGEDGE     /**< GPIO interrupt type */
 };
-/*
+
 GPIO_ConfigTypeDef led_pin ={
     //GPIO15-->R_LED;GPIO13-->B_LED;GPIO12-->G_LED
-    .GPIO_Pin        = GPIO_Pin_15 | GPIO_Pin_13 | GPIO_Pin_12,               //< GPIO pin 
+    .GPIO_Pin        = GPIO_Pin_2,//GPIO_Pin_15 | GPIO_Pin_13 | GPIO_Pin_12,               //< GPIO pin 
     .GPIO_Mode       = GPIO_Mode_Output,          //< GPIO mode 
     .GPIO_Pullup     = GPIO_PullUp_DIS,           //< GPIO pullup 
     .GPIO_IntrType   = GPIO_PIN_INTR_DISABLE      //< GPIO interrupt type 
 };
-*/
+/**/
 
 LOCAL esp_udp ssdp_udp;
 LOCAL struct espconn pssdpudpconn;
 LOCAL os_timer_t ssdp_time_serv;
 
 uint8  lan_buf[200];
-uint16 lan_buf_len;
+uint16 lan_buf_len,clear_rest;
 uint8  udp_sent_cnt = 0;
 
 const airkiss_config_t akconf =
@@ -124,6 +126,7 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 	int32_t buf_index=0;
 	int8_t *c=NULL;
 	int8_t buffer[128];
+	int8_t rec_count;//重试次数
 	struct sockaddr_in remote_ip;
 	const int32_t server_port=80;
 	const static int8_t *serverurl="api.openweathermap.org";
@@ -131,8 +134,10 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 //    const int8_t request[256]="GET /data/2.5/forecast/daily?q=isachsen&mode=json&units=metric&cnt=3&appid=d9176758eea113e3813f472f387439e2 HTTP/1.1\nHOST: api.openweathermap.org\nCache-Control: no-cache\n\n\n";
 	const struct hostent *pURL=gethostbyname(serverurl);
 	const int socketfd=socket(AF_INET, SOCK_STREAM, 0);
-  
+	
+ #ifdef debug_printf
     printf(" %s Run... \n", __func__);
+ #endif
 
 	
 	if (socketfd<0)
@@ -161,7 +166,7 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 	}
 	memset(buffer,0,sizeof(buffer));
 	//memset(pbuf,0,maxsiz);
-	vTaskDelay(500 / portTICK_RATE_MS);
+	vTaskDelay(10);
 	//printf("-------------------Read-------------------\n");
 	while ((recbytes = read(socketfd , buffer, sizeof(buffer)-1)) > 0)					/* 接收起始头 */
 	{
@@ -175,6 +180,8 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 		}
 		buf_index=recbytes-(c-buffer);
 		memcpy(pbuf,c,recbytes-(c-buffer));
+		
+		vTaskDelay(1);
 		//c-buffer;
 		//printf("Start:%u,Offset:%u,%u\n",buffer,c,c-buffer);
 		//printf("-------------------Index-------------------\n");
@@ -182,7 +189,6 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 		//printf("%s\n", pbuf);
 		break;
 		//memset(buffer,0,sizeof(buffer));
-		//vTaskDelay(100 / portTICK_RATE_MS);
 	}
 	if (recbytes<1)
 	{
@@ -191,6 +197,7 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 		return -1;
 	}
 	memset(buffer,0,sizeof(buffer));
+	rec_count = 0;
 	while ((recbytes = read(socketfd , buffer, sizeof(buffer)-1)) > 0)					/* 接收剩下部分数据 */
 	{
 		
@@ -217,10 +224,17 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 		//}
 		//memset(buffer,0,sizeof(buffer));
 		vTaskDelay(1);
+		
+		clear_rest = 0;
+		if(rec_count > 50)	//重试50次
+			return -1;
+		
+		rec_count++;
 	}
 	temp=maxsiz;
 	while (('}'!=pbuf[temp]) && (temp >= 0))
 	{
+		clear_rest = 0;
 		pbuf[temp]='\0';
 		--temp;		
 		vTaskDelay(1);
@@ -243,8 +257,10 @@ int32_t vGetWeatherList(const int8_t *jsStr,xWeatherList_t *weatherList,const ui
 	cJSON *jsWeatherList=NULL;
 	cJSON *jsTemp=NULL;
 	cJSON *jsWeather=NULL;
-  
+	
+#ifdef debug_printf  
     printf(" %s Run... \n", __func__);
+#endif
 	
 	/***************************************************************/
 	if (cJSON_GetArraySize(jsonRoot)<5)
@@ -300,9 +316,11 @@ int32_t vGetWeatherList(const int8_t *jsStr,xWeatherList_t *weatherList,const ui
 
 void chang_valu(int32_t temp_valu,char *dis_str)
 {
-	  
+
+#ifdef debug_printf	  
     printf(" %s Run... \n", __func__);
-	
+#endif
+
     if(temp_valu > 0){            
         if(temp_valu < 10)
             sprintf(dis_str,"  %d^",temp_valu);
@@ -322,8 +340,10 @@ void chang_valu(int32_t temp_valu,char *dis_str)
 int8_t get_icondata(char *ico_str)
 {
     int8_t ico_dat = 0,ico_offset = 0;
-	  
+
+#ifdef debug_printf	  
     printf(" %s Run... \n", __func__);
+#endif
     
     ico_dat = (*ico_str - '0') * 10 + (*(ico_str + 1) - '0');
     switch(ico_dat)
@@ -395,7 +415,7 @@ void vTaskNetwork(void *pvParameters)
 	uint8 pwm_tim,blink_loop;
 	gpio16_output_set(0);
 
-	printf("\n%s Running...\n",__func__);
+//	printf("\n%s Running...\n",__func__);
 
 	
 	if (NULL==pbuf)
@@ -415,8 +435,11 @@ void vTaskNetwork(void *pvParameters)
     while (1)
 	{
 		net_errcnt=1;		  
+#ifdef debug_printf
     	printf("\n %s Run... \n", __func__);
+#endif
 		
+		clear_rest = 0;
 		
 		//只有WiFi连接了才能进行数据抓取
 		if(wifi_station_get_connect_status() == STATION_GOT_IP)
@@ -521,7 +544,7 @@ void vTaskNetwork(void *pvParameters)
 
 					for(dis_cnt = 0;dis_cnt<32;dis_cnt++)
 					{
-											
+						clear_rest = 0;					
 						dis_count = dis_count % 4;
 						dis_cont[0] = '[';
 						dis_cont[1] = ']';
@@ -597,6 +620,7 @@ void vTaskNetwork(void *pvParameters)
 
 					for(blink_loop = 0;blink_loop < 20;blink_loop++)
 					{
+						clear_rest = 0;
 						pwm_tim++;
 						pwm_tim = pwm_tim % 9;
 						if(pwm_tim <= 3)
@@ -617,6 +641,7 @@ void vTaskNetwork(void *pvParameters)
 		}
 		else
 		{			
+			clear_rest = 0;
 			if((err_cnt == 240) && (init_flag == 0))
 			{				
 				//模块如果30S没有连接到路由就进行超时出错显示
@@ -806,7 +831,8 @@ smartconfig_task(void *pvParameters)
 void 
 key_setwifi(void *pvParameters)
 {
-    uint32 get_keyval,loop_count;
+    uint32 get_keyval;
+	uint8 loop_count,led_count;
    
     while(1)
     {
@@ -825,10 +851,13 @@ key_setwifi(void *pvParameters)
             loop_count = 0;
         }
         
-        if(loop_count > 40)
+        if((loop_count > 40) || (clear_rest > 500))
         {
             loop_count = 0;
-            printf(" Rest System..\n");
+			if(clear_rest)
+            	printf(" clear_rest Rest System..\n");
+			else
+            	printf(" loop_count Rest System..\n");
             system_restart();
         }
 		
@@ -837,10 +866,17 @@ key_setwifi(void *pvParameters)
 		
 //	printf(" Net 0x%02x \n",wifi_station_get_connect_status());
 //        printf(" RUN...\n");
-//        GPIO_OUTPUT(GPIO_Pin_15,0);
-//        vTaskDelay(100);
-//        GPIO_OUTPUT(GPIO_Pin_15,1);
+        
         vTaskDelay(10);
+		led_count++;
+		led_count = led_count % 31;
+		if(led_count == 10)
+		{
+			clear_rest++;
+			GPIO_OUTPUT(GPIO_Pin_2,0);
+		}
+		else
+        	GPIO_OUTPUT(GPIO_Pin_2,1);
     }
     vTaskDelete(NULL);
 }
@@ -905,7 +941,7 @@ static void drv_Input_Init( void )
 	
     gpio_config(&smart_set_pin);  
 	gpio16_output_conf();
-//    gpio_config(&led_pin);    
+    gpio_config(&led_pin);    
  
     printf(" gpio_config Run... \n");   
     printf(" %s Run... \n", __func__);
@@ -957,8 +993,9 @@ user_init(void)
 		{
 			vTaskDelay(10);
 		}
-		
-        smartconfig_set_type(SC_TYPE_ESPTOUCH);
+
+		//可以测试一下微信的arikiss
+        //smartconfig_set_type(SC_TYPE_ESPTOUCH);
 		//添加smartconfig任务
         xTaskCreate(smartconfig_task, "smartconfig_task", 256, NULL, 2, NULL);
     }

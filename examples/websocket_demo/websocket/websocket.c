@@ -47,9 +47,9 @@ nopoll_bool debug = nopoll_false;
 nopoll_bool show_critical_only = nopoll_false;
 LOCAL xQueueHandle	Web_QueueStop = NULL;
 
-#define local_host_name		"iot.espressif.cn"
+#define local_host_name		"iot.espressif.cn"//"www.baidu.com"//"192.168.20.19"//
 #define local_host_url		"v1/datastreams/tem_hum/datapoint"
-#define local_host_port		"9000"
+#define local_host_port		"8000"//"9000"
 #define local_host_ports	"9443"
 
 nopoll_bool test_sending_and_check_echo (noPollConn * conn, const char * label, const char * msg)
@@ -147,39 +147,61 @@ nopoll_bool test_02 (void) {
 	printf ("Test 02: sending basic content..\n");
 
 	/* send content text(utf-8) */
-	if (nopoll_conn_send_text (conn, "This is a test", 14) != 14) {
-		printf ("ERROR: Expected to find proper send operation..\n");
-		return nopoll_false;
-	}
+    for(iter=0;iter<10;iter++)
+    {
+        //if (nopoll_conn_send_text (conn, "This is a test", 14) != 14) {
+        if (nopoll_conn_send_text (conn, "AB", 2) != 2) {
+            printf ("ERROR: Expected to find proper send operation..\n");
+            return nopoll_false;
+        }
+    }
 
-	/* wait for the reply */
+    printf("wait for the reply...\n");
+
+	// wait for the reply 
 	iter = 0;
 	while ((msg = nopoll_conn_get_msg (conn)) == NULL) {
 
 		if (! nopoll_conn_is_ok (conn)) {
 			printf ("ERROR: received websocket connection close during wait reply..\n");
 			return nopoll_false;
-		}
-
-		nopoll_sleep (10000);
-
-		if (iter > 10)
+		}		
+        
+        if (iter > 10)
 			break;
-	} /* end if */
+        printf("reply count : %d \n",iter);
+        iter++;
 
-	/* check content received */
+		//nopoll_sleep (10000);
+        nopoll_sleep (50);
+
+
+	} // end if 
+    
+
+/*    
+    msg = nopoll_conn_get_msg (conn);
+    printf ("'%s'..\n",
+    (const char *) nopoll_msg_get_payload (msg));
+*/
+
+	// check content received 
+    printf(" check content received \n");
 	if (! nopoll_cmp ((char*) nopoll_msg_get_payload (msg), "This is a test")) {
 		printf ("ERROR: expected to find message 'This is a test' but something different was received: '%s'..\n",
 			(const char *) nopoll_msg_get_payload (msg));
 		return nopoll_false;
-	} /* end if */
+	} // end if 
 
-	/* unref message */
+    printf(" unref message \n");
+	// unref message 
 	nopoll_msg_unref (msg);
 
+    printf(" finish connection \n");
 	/* finish connection */
 	nopoll_conn_close (conn);
 	
+    printf(" finish \n");
 	/* finish */
 	nopoll_ctx_unref (ctx);
 
@@ -662,8 +684,8 @@ LOCAL void websocket_task(void *pvParameters)
 	struct station_config sta_config;
 	bzero(&sta_config, sizeof(struct station_config));
 
-	sprintf(sta_config.ssid, "B-LINK_845R");
-	sprintf(sta_config.password, "000");
+	sprintf(sta_config.ssid, "FitechCam");
+	sprintf(sta_config.password, "fitech+2016");
 	wifi_station_set_config(&sta_config);
 	os_printf("%s\n", __func__);
 	wifi_get_ip_info(STATION_IF, &ip_config);
