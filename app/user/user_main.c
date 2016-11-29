@@ -48,6 +48,24 @@
 #define DEVICE_ID 			"122475" //model ID
 #define debug_printf
 #undef  debug_printf
+#define SNTP_TIME
+#undef  SNTP_TIME
+
+#ifdef SNTP_TIME
+#include "lwip/err.h"
+#include "lwip/sockets.h"
+#include "lwip/sys.h"
+#include "lwip/netdb.h"
+#include "lwip/dns.h"
+#include "time.h"
+//#include "ssid_config.h"
+#include "sntp.h"
+#define SNTP_SERVERS 	"0.pool.ntp.org", "1.pool.ntp.org", \
+						"2.pool.ntp.org", "3.pool.ntp.org"
+//#define vTaskDelayMs(ms)	vTaskDelay((ms)/portTICK_RATE_MS)
+#define UNUSED_ARG(x)	(void)x
+#endif
+
 
 #define DEFAULT_LAN_PORT 	12476
 
@@ -393,6 +411,31 @@ int8_t get_icondata(char *ico_str)
     return ico_offset;
 }
 
+#ifdef SNTP_TIME
+void SntpTsk(void *pvParameters)
+{
+	char *servers[] = {SNTP_SERVERS};
+	UNUSED_ARG(pvParameters);	// Wait until we have joined AP and are assigned an IP	
+	while (wifi_station_get_connect_status() != STATION_GOT_IP) 
+	{		
+		vTaskDelay(100);	
+	}	// Start SNTP	
+	printf("Starting SNTP... ");	
+	sntp_set_update_delay(1*60000);	
+	sntp_initialize(1, 0);	
+	sntp_set_servers(servers, sizeof(servers) / sizeof(char*));	
+	printf("DONE!\n");	
+	while(1)
+	{
+		vTaskDelay(500);
+		time_t ts = sntp_get_rtc_time(NULL);
+		printf("Time: %x\n",ts);
+		//printf("TIME: %s", ctime(&ts));	
+	}
+}
+
+#endif
+
 
 #define DT_CNT				(3)				//n天数据
 void vTaskNetwork(void *pvParameters)
@@ -439,7 +482,7 @@ void vTaskNetwork(void *pvParameters)
     	printf("\n %s Run... \n", __func__);
 #endif
 		
-		clear_rest = 0;
+//		clear_rest = 0;
 		
 		//只有WiFi连接了才能进行数据抓取
 		if(wifi_station_get_connect_status() == STATION_GOT_IP)
@@ -641,7 +684,7 @@ void vTaskNetwork(void *pvParameters)
 		}
 		else
 		{			
-			clear_rest = 0;
+//			clear_rest = 0;
 			if((err_cnt == 240) && (init_flag == 0))
 			{				
 				//模块如果30S没有连接到路由就进行超时出错显示
@@ -850,14 +893,21 @@ key_setwifi(void *pvParameters)
         {
             loop_count = 0;
         }
+
+//		printf("rest: %d \n",clear_rest);
         
-        if((loop_count > 40) || (clear_rest > 500))
+        if((loop_count > 40) || (clear_rest > 50))
         {
             loop_count = 0;
-			if(clear_rest)
-            	printf(" clear_rest Rest System..\n");
+			if((clear_rest > 0) && (init_flag == 0))
+			{
+				printf(" clear_rest Rest System..\n");
+			}            	
 			else
-            	printf(" loop_count Rest System..\n");
+			{
+				printf(" loop_count Rest System..\n");
+			}
+            	
             system_restart();
         }
 		
@@ -872,7 +922,10 @@ key_setwifi(void *pvParameters)
 		led_count = led_count % 31;
 		if(led_count == 10)
 		{
-			clear_rest++;
+			if(init_flag == 0)
+			{
+				clear_rest++;
+			}
 			GPIO_OUTPUT(GPIO_Pin_2,0);
 		}
 		else
@@ -967,6 +1020,16 @@ user_init(void)
     wifi_set_opmode(STATION_MODE);  
 	//修改hostname名字
 	wifi_station_set_hostname(hostname);
+
+/*
+    struct station_config config = 
+	{
+		.ssid = "FitechCam",
+		.password = "fitech+2016",
+	};   // required to call wifi_set_opmode before station_set_config 
+	wifi_set_opmode(STATION_MODE);
+	wifi_station_set_config(&config);
+*/
     
     drv_Input_Init();      			//初始化 GPIO
     printf("SDK version:%s\n", system_get_sdk_version());
@@ -1006,7 +1069,10 @@ user_init(void)
 		LCD_print(0,34,"WiFi Connection ");		
 		LCD_print(0,50,"Please Wait.....");
 	}
+#ifdef SNTP_TIME
 
+	xTaskCreate(SntpTsk,"SNTP", 1024, NULL, 1, NULL);
+#endif
 	//添加key_setwifi按键检测任务用来检测是否切换到smartconfig模式
 	xTaskCreate(key_setwifi , "key_setwifi", 256,  NULL, 2, NULL);
 	//添加vTaskNetwork任务原来获取天气数据和显示天气数据到邋邋OLED

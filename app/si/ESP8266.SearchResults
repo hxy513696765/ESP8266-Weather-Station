@@ -1,18 +1,7 @@
----- cJSON_Delete Matches (17 in 3 files) ----
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):cJSON_Delete(cJSON *c)
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            cJSON_Delete(c->child);
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):        cJSON_Delete(c);    /* parse failure. ep is set. */
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            cJSON_Delete(c);
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):    cJSON_Delete(cJSON_DetachItemFromArray(array, which));
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):    cJSON_Delete(cJSON_DetachItemFromObject(object, string));
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):    cJSON_Delete(c);
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            cJSON_Delete(newitem);
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            cJSON_Delete(newitem);
-cJSON.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            cJSON_Delete(newitem);
-cJSON.h (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\include):/* Supply a block of JSON, and this returns a cJSON object you can interrogate. Call cJSON_Delete when finished. */
-cJSON.h (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\include):void   cJSON_Delete(cJSON *c);
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	cJSON_Delete(jsWeatherRoot);
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	cJSON_Delete(jsWeatherList);
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	cJSON_Delete(jsWeather);
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	cJSON_Delete(jsTemp);
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	cJSON_Delete(jsonRoot);
+---- init_flag Matches (6 in 1 files) ----
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):uint8_t init_flag = 1;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			init_flag = 0;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			if((err_cnt == 240) && (init_flag == 0))
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			if(init_flag == 0)
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	init_flag = 0 ;
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		init_flag = 1;
