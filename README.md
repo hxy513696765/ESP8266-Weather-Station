@@ -1,9 +1,11 @@
-<<<<<<< HEAD
+
 上电按下连接到GPIO3的按键20S以上就会计入Smartconfig模式
+
 Press the button for 20 seconds to enter Smartconfig mode
 
 原理图如下
 ![Image text](https://raw.githubusercontent.com/hxy513696765/ESP8266-Weather-Station/master/PDF%20and%20Schematic%20diagram/schematic%20diagram.bmp)
+
 
 ![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/weather%20display.jpg?raw=true)
 
@@ -12,6 +14,8 @@ Press the button for 20 seconds to enter Smartconfig mode
 ![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/hardware.jpg?raw=true)
 
 ![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/smartconfig.jpg?raw=true)
+
+![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/time.png?raw=true）
 
 
 
