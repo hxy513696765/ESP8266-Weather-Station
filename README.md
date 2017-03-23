@@ -15,7 +15,7 @@ Press the button for 20 seconds to enter Smartconfig mode
 
 ![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/smartconfig.jpg?raw=true)
 
-![Image text](https://github.com/hxy513696765/ESP8266-Weather-Station/blob/master/Photo/time.png?raw=true）
+![Image text](https://raw.githubusercontent.com/hxy513696765/ESP8266-Weather-Station/master/Photo/time.png)
 
 
 
