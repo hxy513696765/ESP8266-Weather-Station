@@ -201,3 +201,38 @@ void Big_print(uint8_t x,uint8_t y,char *p_string)
     
     Write_IIC_Command(0x3d); // Set display on     
 }
+void Clock_print(uint8_t x,uint8_t y,char *p_string)
+{
+    uint8_t loop = 0,scan_loop=0,font_index = 0;
+    uint8_t y_loop,x_offset;//,x_offset = 0,y_offset = 0;
+//    x_offset = x;
+//    y_offset = y;
+    while(*(p_string + loop))
+    {
+        for(scan_loop = 0;scan_loop < CLOCK_NUM;scan_loop++)
+        {
+            if(*(p_string + loop) == Clock_font_tab[scan_loop].string)
+            {
+                font_index = scan_loop;
+                break;
+            }
+        }
+        
+        for(y_loop = 0;y_loop < 64;y_loop++)
+        {
+            Write_IIC_Command(0x10 | ((y_loop + y) >> 4)); // H_byte AY ADD
+            Write_IIC_Command((y_loop + y) & 0x0F); // L_byte AY ADD
+            for(x_offset = 0;x_offset < 4;x_offset++)
+            {                
+                Write_IIC_Command(0xc0 + x + loop*3 + x_offset); // SET AX Add
+                Write_IIC_Data(*(Clock_font_tab[font_index].Font_tab + x_offset + y_loop*4));
+            }
+
+        }      
+         
+        loop++;
+    }
+    
+    Write_IIC_Command(0x3d); // Set display on     
+}
+

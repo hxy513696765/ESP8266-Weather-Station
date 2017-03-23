@@ -1,7 +1,26 @@
----- init_flag Matches (6 in 1 files) ----
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):uint8_t init_flag = 1;
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			init_flag = 0;
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			if((err_cnt == 240) && (init_flag == 0))
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			if(init_flag == 0)
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	init_flag = 0 ;
-User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		init_flag = 1;
+---- memset Matches (25 in 1 files) ----
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	(airkiss_memset_fn)&memset,
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	//memset(pbuf,0,maxsiz);
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(date_buff,'\0',sizeof(date_buff));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			memset(web_time.year,'\0',sizeof(web_time.year));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.month,'\0',sizeof(web_time.month));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.day,'\0',sizeof(web_time.day));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.week,'\0',sizeof(web_time.week));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.hour,'\0',sizeof(web_time.hour));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.minute,'\0',sizeof(web_time.minute));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(web_time.second,'\0',sizeof(web_time.second));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(year,'\0',sizeof(year));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(month,'\0',sizeof(month));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(day,'\0',sizeof(day));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(week,'\0',sizeof(week));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(hour,'\0',sizeof(hour));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(minute,'\0',sizeof(minute));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):            memset(second,'\0',sizeof(second));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		//memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):	memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			//memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):		//memset(buffer,0,sizeof(buffer));
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):			memset(pbuf,'\0',BUFFER_SIZE+1);
+User_main.c (d:\vm\share\esp8266_rtos_sdk-1.4.x\app\user):					memset(time_str,'\0',sizeof(time_str));

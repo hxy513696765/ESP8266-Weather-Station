@@ -4,6 +4,7 @@
 
 #define FONT_NUM 95//69//
 #define BIG_NUM 15
+#define CLOCK_NUM 13
 struct Font_dat_16X8
 {
     const char string;
@@ -14,8 +15,15 @@ struct Font_dat_32X16
     const char string;
     const uint8_t Font_tab[64];
 };
+struct Font_dat_64X32
+{
+    const char string;
+    const uint8_t Font_tab[256];
+};
 extern const struct Font_dat_16X8 word_string[FONT_NUM];
 extern const struct Font_dat_32X16 Big_font_tab[BIG_NUM];
+extern const struct Font_dat_64X32 Clock_font_tab[CLOCK_NUM];
+
 extern const uint8_t lcd_show[];
 extern const uint8_t net_erro[];
 #endif

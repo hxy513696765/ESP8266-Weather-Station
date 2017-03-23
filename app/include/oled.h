@@ -29,5 +29,6 @@ void Clear_lcd(void);
 void Picture_show(uint8_t x,uint8_t y,uint8_t with,uint8_t high,const uint8_t DisplayData[]);
 void LCD_print(uint8_t x,uint8_t y,char *p_string);
 void Big_print(uint8_t x,uint8_t y,char *p_string);
+void Clock_print(uint8_t x,uint8_t y,char *p_string);
 void gpio_init(void);
 #endif

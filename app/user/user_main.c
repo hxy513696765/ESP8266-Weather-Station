@@ -40,6 +40,8 @@
 #include "espressif/airkiss.h"
 #include "espressif/esp_softap.h"
 
+//#include "time.h"
+
 //#define server_ip "192.168.101.142"
 //#define server_port 9669
 
@@ -48,23 +50,7 @@
 #define DEVICE_ID 			"122475" //model ID
 #define debug_printf
 #undef  debug_printf
-#define SNTP_TIME
-#undef  SNTP_TIME
 
-#ifdef SNTP_TIME
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
-#include "time.h"
-//#include "ssid_config.h"
-#include "sntp.h"
-#define SNTP_SERVERS 	"0.pool.ntp.org", "1.pool.ntp.org", \
-						"2.pool.ntp.org", "3.pool.ntp.org"
-//#define vTaskDelayMs(ms)	vTaskDelay((ms)/portTICK_RATE_MS)
-#define UNUSED_ARG(x)	(void)x
-#endif
 
 
 #define DEFAULT_LAN_PORT 	12476
@@ -114,6 +100,40 @@ typedef struct
 	int32_t eve;
 
 }xTemperature_t;
+
+typedef struct 
+{
+	int8_t year[5];	
+	int8_t month[4];	
+	int8_t day[3];	
+	int8_t week[4];	
+	int8_t hour[3];	
+	int8_t minute[3];	
+	int8_t second[3];
+
+	uint16 int_year;
+	int8_t int_month;	
+	int8_t int_day;	
+	int8_t int_week;	
+	int8_t int_hour;	
+	int8_t int_minute;	
+	int8_t int_second;
+/*
+	char *GMT8_YEAR;
+	char *GMT8_MONTH;
+	char *GMT8_DAY;
+	char *GMT8_WEEK;
+	char *GMT8_HOUR;
+	char *GMT8_MINUTE;
+	char *GMT8_SECOND;
+*/	
+
+}GMT_TIME;
+
+//GMT_TIME dis_time;
+static GMT_TIME web_time;
+
+
 #define STA_SIZE			(16)
 typedef struct
 {
@@ -152,6 +172,12 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 //    const int8_t request[256]="GET /data/2.5/forecast/daily?q=isachsen&mode=json&units=metric&cnt=3&appid=d9176758eea113e3813f472f387439e2 HTTP/1.1\nHOST: api.openweathermap.org\nCache-Control: no-cache\n\n\n";
 	const struct hostent *pURL=gethostbyname(serverurl);
 	const int socketfd=socket(AF_INET, SOCK_STREAM, 0);
+    int8_t date_buff[40];
+    int8_t *date_addr = NULL;
+    int8_t *gmt_addr = NULL;
+    int8_t *dot_addr = NULL;
+    uint8_t date_start;
+    uint8_t date_end;
 	
  #ifdef debug_printf
     printf(" %s Run... \n", __func__);
@@ -190,6 +216,90 @@ int32_t vGetRawData(int8_t *pbuf,const int32_t maxsiz)
 	{
 		//buffer[recbytes] = 0;
 		c=strstr(buffer,"{");
+        date_addr = strstr(buffer,"Date: ");
+        gmt_addr = strstr(buffer,"GMT");
+        
+        if((NULL != date_addr) && (NULL != gmt_addr))
+        {
+            dot_addr = strstr(buffer,",");
+            date_start = date_addr - buffer;
+            //date_end = date_buff - gmt_addr;
+            
+            memset(date_buff,'\0',sizeof(date_buff));
+			
+				
+			memset(web_time.year,'\0',sizeof(web_time.year));
+            memset(web_time.month,'\0',sizeof(web_time.month));
+            memset(web_time.day,'\0',sizeof(web_time.day));
+            memset(web_time.week,'\0',sizeof(web_time.week));
+            memset(web_time.hour,'\0',sizeof(web_time.hour));
+            memset(web_time.minute,'\0',sizeof(web_time.minute));
+            memset(web_time.second,'\0',sizeof(web_time.second));
+#if 0			
+            memset(year,'\0',sizeof(year));
+            memset(month,'\0',sizeof(month));
+            memset(day,'\0',sizeof(day));
+            memset(week,'\0',sizeof(week));
+            memset(hour,'\0',sizeof(hour));
+            memset(minute,'\0',sizeof(minute));
+            memset(second,'\0',sizeof(second));
+#endif			
+            
+//            printf("Time  : %s\n",date_buff);         
+
+#if 1			
+            strncpy(date_buff, buffer+date_start +6, 31);
+            strncpy(web_time.week,   date_buff, 3);
+            strncpy(web_time.day,    date_buff + 5, 2);
+            strncpy(web_time.month,  date_buff + 8, 3);
+            strncpy(web_time.year,   date_buff + 12,4);
+            strncpy(web_time.hour,   date_buff + 17,2);
+            strncpy(web_time.minute, date_buff + 20,2);
+            strncpy(web_time.second, date_buff + 23,2);
+
+			web_time.int_year   = atol(web_time.year);
+			web_time.int_day    = atoi(web_time.day);
+			web_time.int_hour   = atoi(web_time.hour);
+			web_time.int_minute = atoi(web_time.minute);
+			web_time.int_second = atoi(web_time.second);
+
+			if((web_time.int_hour + 8) >= 24 )
+				web_time.int_day = (web_time.int_day + 1)%32;
+
+			web_time.int_hour = (web_time.int_hour + 8) % 24;
+
+			#if 0
+			printf("week:%s\n",web_time.week);
+			printf("day:%s\n",web_time.day);
+			printf("month:%s\n",web_time.month);
+			printf("year:%s\n",web_time.year);
+			printf("hour:%s\n",web_time.hour);
+			printf("minute:%s\n",web_time.minute);
+			printf("second:%s\n",web_time.second);
+
+            printf("----------------\n");
+			
+			printf("year : %d\n",web_time.int_year);
+			
+			printf("day : %d\n",web_time.int_day);
+			
+			printf("Time : %02d:",web_time.int_hour);
+			printf("%02d:",web_time.int_minute);
+			printf("%02d\n",web_time.int_second);
+			#endif
+
+#endif			
+            
+//            printf("buffer : %d\n",buffer);
+//            printf("Date : %d\n",date_addr);
+//            printf("GMT : %d\n",gmt_addr);
+//            printf("D-B : %d\n",date_addr - buffer);
+//            printf("G-B : %d\n",gmt_addr - buffer);
+//            printf("G-D : %d\n",gmt_addr-date_addr);
+        }                 
+        
+        
+//        printf("C :%d\n",c);
 		if (NULL==c)
 		{
 			memset(buffer,0,sizeof(buffer));
@@ -411,30 +521,7 @@ int8_t get_icondata(char *ico_str)
     return ico_offset;
 }
 
-#ifdef SNTP_TIME
-void SntpTsk(void *pvParameters)
-{
-	char *servers[] = {SNTP_SERVERS};
-	UNUSED_ARG(pvParameters);	// Wait until we have joined AP and are assigned an IP	
-	while (wifi_station_get_connect_status() != STATION_GOT_IP) 
-	{		
-		vTaskDelay(100);	
-	}	// Start SNTP	
-	printf("Starting SNTP... ");	
-	sntp_set_update_delay(1*60000);	
-	sntp_initialize(1, 0);	
-	sntp_set_servers(servers, sizeof(servers) / sizeof(char*));	
-	printf("DONE!\n");	
-	while(1)
-	{
-		vTaskDelay(500);
-		time_t ts = sntp_get_rtc_time(NULL);
-		printf("Time: %x\n",ts);
-		//printf("TIME: %s", ctime(&ts));	
-	}
-}
 
-#endif
 
 
 #define DT_CNT				(3)				//n天数据
@@ -561,7 +648,7 @@ void vTaskNetwork(void *pvParameters)
 
 			if(net_errcnt == 1)
 			{
-				//LCD_clear = LCD_clear % 4;			
+				//LCD_clear = LCD_clear % 4;	
 
 				if(LCD_clear == 1)
 				{
@@ -619,7 +706,7 @@ void vTaskNetwork(void *pvParameters)
 
 					LCD_clear = 0;
 				}
-				else
+				else if(0 == LCD_clear)
 				{	 
 					dis_flag = 0;
 					err_cnt = 0;
@@ -661,7 +748,7 @@ void vTaskNetwork(void *pvParameters)
 					
 					LCD_print(9,48,dis_str);   //显示温度值
 
-					for(blink_loop = 0;blink_loop < 20;blink_loop++)
+					for(blink_loop = 0;blink_loop < 50;blink_loop++)
 					{
 						clear_rest = 0;
 						pwm_tim++;
@@ -671,9 +758,46 @@ void vTaskNetwork(void *pvParameters)
 						else
 							gpio16_output_set(1);
 						
-						vTaskDelay(25);
+						vTaskDelay(10);
 					}
 
+					
+					LCD_clear = 2;
+				}
+				else
+				{
+					char time_str[10];
+					
+					Clear_lcd();
+					
+					memset(time_str,'\0',sizeof(time_str));
+					//sprintf(time_str,"%02d:%02d",web_time.int_hour,web_time.int_minute);
+					sprintf(time_str,"%02d:",web_time.int_hour);
+					Clock_print(2,0,time_str);
+					Clock_print(7,0,": ");
+					
+					memset(time_str,'\0',sizeof(time_str));
+					sprintf(time_str,"%02d",web_time.int_minute);
+					Clock_print(9,0,time_str);
+					
+					//Big_print(0,0,web_time.year);
+					//Big_print(3,16,time_str);
+//					Big_print(48,32,":");
+//					Big_print(64,32,web_time.minute);
+//					Big_print(96,32,web_time.GMT8_SECOND);
+					
+					for(blink_loop = 0;blink_loop < 50;blink_loop++)
+					{
+						clear_rest = 0;
+						pwm_tim++;
+						pwm_tim = pwm_tim % 9;
+						if(pwm_tim <= 3)
+							gpio16_output_set(0);
+						else
+							gpio16_output_set(1);
+						
+						vTaskDelay(10);
+					}
 					
 					LCD_clear = 1;
 				}
@@ -883,8 +1007,8 @@ key_setwifi(void *pvParameters)
 //    	printf(" %s Run... \n", __func__);
 		
         get_keyval = gpio_input_get();
-//        printf(" %00000008x \n",get_keyval);
-        if((get_keyval & 0x00000008) == 0) 
+        //printf(" %00000008x \n",get_keyval);
+        if((get_keyval & 0x00000001) == 0) 
         {             
             vTaskDelay(10); 
             loop_count++;
@@ -1016,16 +1140,19 @@ user_init(void)
 	init_flag = 0 ;
 	char hostname[]="W-Station";
 
+
     uart_init_new();				//初始化串口
     wifi_set_opmode(STATION_MODE);  
 	//修改hostname名字
 	wifi_station_set_hostname(hostname);
 
+	
 /*
+
     struct station_config config = 
 	{
-		.ssid = "FitechCam",
-		.password = "fitech+2016",
+		.ssid = "603",
+		.password = "WDQQ1681",
 	};   // required to call wifi_set_opmode before station_set_config 
 	wifi_set_opmode(STATION_MODE);
 	wifi_station_set_config(&config);
@@ -1037,8 +1164,8 @@ user_init(void)
     Initial_LCD();
     printf("Initial_LCD OK \n");
 
-	//如果开机有检测到连接到GPIO4上的按键按下就进入到Smartconfig模式
-    if((gpio_input_get() & 0x00000008) == 0)
+	//如果开机有检测到连接到GPIO3上的按键按下就进入到Smartconfig模式
+    if((gpio_input_get() & 0x00000001) == 0)
     {
 		init_flag = 1;
      /* need to set opmode before you set config */
@@ -1066,13 +1193,10 @@ user_init(void)
 	{
 		Picture_show(0,0,128,33,net_erro+528);
 		
-		LCD_print(0,34,"WiFi Connection ");		
-		LCD_print(0,50,"Please Wait.....");
+		LCD_print(0,34," WiFi Connection");		
+		LCD_print(0,50," Please Wait....");
 	}
-#ifdef SNTP_TIME
 
-	xTaskCreate(SntpTsk,"SNTP", 1024, NULL, 1, NULL);
-#endif
 	//添加key_setwifi按键检测任务用来检测是否切换到smartconfig模式
 	xTaskCreate(key_setwifi , "key_setwifi", 256,  NULL, 2, NULL);
 	//添加vTaskNetwork任务原来获取天气数据和显示天气数据到邋邋OLED
